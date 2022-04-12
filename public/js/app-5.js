@@ -184,7 +184,7 @@ class EditableTimer extends React.Component {
           onFormClose={this.handleFormClose}
         />
       );
-    // Inside EditableTimer
+      // Inside EditableTimer
     } else {
       return (
         <Timer
