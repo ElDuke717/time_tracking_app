@@ -21,6 +21,38 @@ class TimersDashboard extends React.Component {
           },
         ],
       }
+
+    // Inside TimersDashboard
+    handleCreateFormSubmit = (timer) => {
+        this.createTimer(timer);
+    };
+
+    handledEditFormSubmit = (attrs) => {
+        this.updateTimer(attrs);
+    };
+
+    createTimer = (timer) => {
+        const t = helpers.newTimer(timer);
+        this.setState({
+            timers: this.state.timers.concat(t),
+        });
+    };
+
+    updateTimer = (attrs) => {
+      this.setState({ 
+        // we call the map method to test if the id matches the id of the timer.  Object.assign is used to return a new timer object with the updated attributes.
+        timers: this.state.timers.map((timer) => {
+          if (timer.id === attrs.id) {
+            return Object.assign({}, timer, {
+              title: attrs.title,
+              project: attrs.project,
+            });
+          } else {
+            return timer;
+          }
+        }),
+      });
+    };
     
     render() {
       return (
@@ -28,8 +60,10 @@ class TimersDashboard extends React.Component {
           <div className='column'>
             <EditableTimerList
                     timers={this.state.timers}
+                    onFormSubmit={this.handleEditFormSubmit}
             />
             <ToggleableTimerForm
+                    onFormSubmit={this.handleCreateFormSubmit}
             />
           </div>
         </div>
@@ -46,11 +80,23 @@ class TimersDashboard extends React.Component {
     handleFormOpen = () => {
         this.setState({ isOpen: true });
     };
+
+    handleFormClose = () => {
+      this.setState({ isOpen: false });
+    };
+
+    handleFormSubmit = (timer) => {
+      this.props.onFormSubmit(timer);
+      this.setState({ isOpen: false });
+    };
     
     render() {
       if (this.state.isOpen) {
         return (
-          <TimerForm />
+          <TimerForm 
+            onFormSubmit={this.handleFormSubmit}
+            onFormClose={this.handleFormClose}
+          />
         );
       } else {
         return (
@@ -77,6 +123,7 @@ class TimersDashboard extends React.Component {
               project={timer.project}
               elapsed={timer.elapsed}
               runningSince={timer.runningSince}
+              onFormSubmit={this.props.onFormSubmit}
             />
           ));
           return (
@@ -93,6 +140,27 @@ class TimersDashboard extends React.Component {
         editFormOpen: false,
     };
     
+    handleEditClick = () => {
+      this.openForm();
+    };
+
+    handleFormClose = () => { 
+      this.closeForm();
+    };
+
+    handleSubmit = (timer) => {
+      this.props.onFormSubmit(timer);
+      this.closeForm();
+    };
+
+    closeForm = () => {
+      this.setState({ editFormOpen: false });
+    };
+
+    openForm = () => {
+      this.setState({ editFormOpen: true });
+    };
+    
     render() {
       if (this.state.editFormOpen) {
         return (
@@ -100,6 +168,8 @@ class TimersDashboard extends React.Component {
             id={this.props.id}
             title={this.props.title}
             project={this.props.project}
+            onFormSubmit={this.handleSubmit}
+            onFormClose={this.handleFormClose}
           />
         );
       } else {
@@ -110,6 +180,7 @@ class TimersDashboard extends React.Component {
             project={this.props.project}
             elapsed={this.props.elapsed}
             runningSince={this.props.runningSince}
+            onEditClick={this.handleEditClick}
           />
         );
       }
@@ -134,7 +205,9 @@ class TimersDashboard extends React.Component {
               </h2>
             </div>
             <div className='extra content'>
-              <span className='right floated edit icon'>
+              <span className='right floated edit icon'
+                onClick={this.props.onEditClick}
+              >
                 <i className='edit icon' />
               </span>
               <span className='right floated trash icon'>
